@@ -12,7 +12,14 @@
 // --> saida: { name: "Camiseta Polo", price: 59.9, amount: 30 }
 
 function updateData(currentObject, newDataObject) {
-  //you code here...
+  const filteredObject = Object.keys(currentObject)
+    .filter((key) => Object.keys(newDataObject).includes(key))
+    .reduce((obj, key) => {
+      obj[key] = newDataObject[key]
+      return {...currentObject, ...obj}
+    }, {...currentObject})
+    
+  return filteredObject;
 }
 
 module.exports = updateData;

@@ -1,13 +1,10 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState, useMemo, useEffect } from 'react'
 import 'h8k-components'
 
 import { image1, image2, image3, image4 } from './assets/images'
 import { Thumbs, Viewer } from './components'
 
 const title = 'Catalog Viewer'
-
-
-
 
 function App() {
   const catalogsList = [
@@ -33,7 +30,39 @@ function App() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [slideTimer, setSlideTimer] = useState(false)
   const [slideDuration] = useState(3000)
+  const hasNextImage = useMemo(() => activeIndex < catalogsList.length-1, [activeIndex])
+  const hasPreviousImage = useMemo(() => activeIndex !== 0, [activeIndex])
 
+  useEffect(() => {
+    if(!slideTimer) return;
+
+    const timerId = setInterval(() => {
+      if(!hasNextImage) {
+        setActiveIndex(0);
+      } else {
+        setActiveIndex((previousState) => previousState+1)
+      }
+    }, slideDuration);
+
+    return () => clearInterval(timerId);
+  }, [activeIndex, slideTimer]); 
+
+  const moveSlider = (action) => {
+    if(action === 'previous') {
+      if(activeIndex === 0) {
+        return setActiveIndex(catalogsList.length - 1)
+      } else {
+        return setActiveIndex((previousState) => previousState - 1)
+      }
+    }
+    if (action === 'next') {
+      if(activeIndex === catalogsList.length - 1) {
+        return setActiveIndex(0)
+      } else {
+        return setActiveIndex((previousState) => previousState + 1)
+      }
+    }
+  }
 
   return (
     <Fragment>
@@ -46,16 +75,19 @@ function App() {
               <button
                 className="icon-only outlined"
                 data-testid="prev-slide-btn"
+                onClick={() => moveSlider('previous')}
               >
                 <i className="material-icons">arrow_back</i>
               </button>
               <Thumbs
                 items={catalogs}
                 currentIndex={activeIndex}
+                setActiveIndex={setActiveIndex}
               />
               <button
                 className="icon-only outlined"
                 data-testid="next-slide-btn"
+                onClick={() => moveSlider('next')}
               >
                 <i className="material-icons">arrow_forward</i>
               </button>
@@ -66,6 +98,7 @@ function App() {
           <input
             type='checkbox'
             data-testid='toggle-slide-show-button'
+            onChange={() => setSlideTimer(!slideTimer)}
           />
           <label className='ml-6'>Start Slide Show</label>
         </div>
